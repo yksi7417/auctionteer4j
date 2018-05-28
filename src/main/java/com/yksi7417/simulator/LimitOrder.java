@@ -1,8 +1,6 @@
 package com.yksi7417.simulator;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.joda.time.DateTime;
+import java.util.concurrent.atomic.Atomiclongeger;
 
 /**
  * the method matches is not thread safe.   Designed for thread-confinement environment 
@@ -13,20 +11,20 @@ import org.joda.time.DateTime;
 public class LimitOrder {
 	public enum Side { BUY, SELL }
 
-	private static final AtomicInteger idGenerator = new AtomicInteger(1);
+	private static final Atomiclongeger idGenerator = new Atomiclongeger(1);
 
-	private int orderid; 
+	private long orderid; 
 	private Side side; 
-	private int qty; 
-	// price as double, but assume to be 6 decimal points precision
+	private long qty; 
+	// price as double, but assume to be 6 decimal polongs precision
 	private double price; 	
-	private DateTime timestamp;
+	private long timestamp;
 	
 	public LimitOrder(LimitOrder other) {
 		this(other.orderid, other.getSide(), other.getQty(), other.getPrice(), other.getTimestamp());
 	}
 	
-	private LimitOrder(int orderId, Side side, int qty, double price, DateTime timestamp) {
+	private LimitOrder(long orderId, Side side, long qty, double price, long timestamp) {
 		super();
 		this.orderid = orderId;
 		this.side = side;
@@ -35,7 +33,7 @@ public class LimitOrder {
 		this.timestamp = timestamp; 
 	}
 
-	public LimitOrder(Side side, int qty, double price, DateTime timestamp) {
+	public LimitOrder(Side side, long qty, double price, long timestamp) {
 		super();
 		this.orderid = idGenerator.incrementAndGet();
 		this.side = side;
@@ -44,20 +42,20 @@ public class LimitOrder {
 		this.timestamp = timestamp; 
 	}
 
-	public int getOrderid() {
+	public long getOrderid() {
 		return orderid;
 	}
 
 	public Side getSide() {
 		return side;
 	}
-	public int getQty() {
+	public long getQty() {
 		return qty;
 	}
 	public double getPrice() {
 		return price;
 	}
-	public DateTime getTimestamp() {
+	public long getTimestamp() {
 		return timestamp;
 	} 
 	
@@ -73,7 +71,7 @@ public class LimitOrder {
 	}
 	
 	/** 
-	 * This method could make change to internal variables to this LimitOrder or the other during a match.   
+	 * This method could make change to longernal variables to this LimitOrder or the other during a match.   
 	 * @return Trade
 	 */
 	public Trade matches(LimitOrder limitOrder) {
@@ -85,7 +83,7 @@ public class LimitOrder {
 	}
 
 	private Trade generateMatchTrade(LimitOrder limitOrder) {
-		int tradeQty = 0;
+		long tradeQty = 0;
 		
 		if (this.getQty() > limitOrder.getQty()) {
 			tradeQty = limitOrder.getQty();

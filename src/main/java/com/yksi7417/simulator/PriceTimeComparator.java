@@ -10,7 +10,7 @@ class PriceTimeComparator implements Comparator<LimitOrder> {
 	@Override
 	public int compare(LimitOrder o1, LimitOrder o2) {
 		if (PriceUtils.isEqual(o1.getPrice() , o2.getPrice()))
-			return o1.getTimestamp().compareTo(o2.getTimestamp());
+			return Long.compare(o1.getTimestamp(), o2.getTimestamp());
 		else 
 			return this.priceComparator.compare(o1,o2);
 	}
