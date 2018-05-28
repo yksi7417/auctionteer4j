@@ -22,14 +22,14 @@ public class TestLimitOrderBook {
 	
 	@Test
 	public void expectEmptyBook() {
-		LimitOrderBook lob = new LimitOrderBook("0700.HK"); 
+		AuctionLimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
 		Quote lastQuoteSnapshot = lob.getQuoteSnapshot();
 		assertTrue(lastQuoteSnapshot.isEmpty());
 	}
 
 	@Test
 	public void placeBidOrderToAnEmptyBook_expectBidOrderIsBestBid() {
-		LimitOrderBook lob = new LimitOrderBook("0700.HK"); 
+		AuctionLimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
 		lob.placeOrder(lobFactory.create(Side.BUY, 10000, 9.87));
 		Quote lastQuoteSnapshot = lob.getQuoteSnapshot();
 		assertFalse(lastQuoteSnapshot.isEmpty());
@@ -39,7 +39,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeBidOrderToSamePrice_expectBidSizeWouldAggregate() {
-		LimitOrderBook lob = new LimitOrderBook("0700.HK"); 
+		AuctionLimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
 		lob.placeOrder(lobFactory.create(Side.BUY, 10000, 9.87));
 		lob.placeOrder(lobFactory.create(Side.BUY, 5000, 9.87));
 		Quote lastQuoteSnapshot = lob.getQuoteSnapshot();
@@ -50,7 +50,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeBidOrderToDifferentPrice_expectBidSizeWouldAggregateAndThereWillBeTwoLevels() {
-		LimitOrderBook lob = new LimitOrderBook("0700.HK"); 
+		AuctionLimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
 		lob.placeOrder(lobFactory.create(Side.BUY, 10000, 9.87));
 		lob.placeOrder(lobFactory.create(Side.BUY, 5000, 9.87));
 		lob.placeOrder(lobFactory.create(Side.BUY, 8000, 9.86));
@@ -64,7 +64,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeBidOrderToDifferentPrice_expectBidSizeWouldAggregateAndThereWillBeTwoLevelsOrderDoesnotMatter() {
-		LimitOrderBook lob = new LimitOrderBook("0700.HK"); 
+		AuctionLimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
 		lob.placeOrder(lobFactory.create(Side.BUY, 10000, 9.87));
 		lob.placeOrder(lobFactory.create(Side.BUY, 8000, 9.86));
 		lob.placeOrder(lobFactory.create(Side.BUY, 5000, 9.87));
@@ -78,7 +78,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeAskOrderToDifferentPrice_expectAskSizeWouldAggregateAndThereWillBeTwoLevelsOrderDoesnotMatter() {
-		LimitOrderBook lob = buildDefaultLOB();
+		AuctionLimitOrderBook lob = buildDefaultLOB();
 		Quote lastQuoteSnapshot = lob.getQuoteSnapshot();
 		assertFalse(lastQuoteSnapshot.isEmpty());
 		assertEquals(lastQuoteSnapshot.getBid(0), 9.87, PriceUtils.Epsilon);
@@ -93,7 +93,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeBuyOrderAtBestAsk_expectTradeEvent() {
-		LimitOrderBook lob = buildDefaultLOB();
+		AuctionLimitOrderBook lob = buildDefaultLOB();
 		CompletableFuture<List<Trade>> future = new CompletableFuture<>();
 		Consumer<List<Trade>> tcb = trades -> future.complete(trades); 
 		lob.subscribeTradeEvent(tcb);
@@ -130,7 +130,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeBuyBigOrderAtBestAsk_expectTwoTradeEvent() {
-		LimitOrderBook lob = buildDefaultLOB();
+		AuctionLimitOrderBook lob = buildDefaultLOB();
 		CompletableFuture<List<Trade>> future = new CompletableFuture<>();
 		Consumer<List<Trade>> tcb = trades -> future.complete(trades); 
 		lob.subscribeTradeEvent(tcb);
@@ -168,7 +168,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeBuyVeryBigOrderAtBestAsk_expectChangeOfBestBidAndBestAsk() {
-		LimitOrderBook lob = buildDefaultLOB();
+		AuctionLimitOrderBook lob = buildDefaultLOB();
 		CompletableFuture<List<Trade>> future = new CompletableFuture<>();
 		Consumer<List<Trade>> tcb = trades -> future.complete(trades); 
 		lob.subscribeTradeEvent(tcb);
@@ -206,7 +206,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeBuyVeryBigOrderAtOneLevelBetterThanAsk_expectTradeWithDifferentPrice() {
-		LimitOrderBook lob = buildDefaultLOB();
+		AuctionLimitOrderBook lob = buildDefaultLOB();
 		CompletableFuture<List<Trade>> future = new CompletableFuture<>();
 		Consumer<List<Trade>> tcb = trades -> future.complete(trades); 
 		lob.subscribeTradeEvent(tcb);
@@ -244,7 +244,7 @@ public class TestLimitOrderBook {
 
 	@Test
 	public void placeSellVeryBigOrderAtBestBid_expectChangeOfBestBidAndBestAsk() {
-		LimitOrderBook lob = buildDefaultLOB();
+		AuctionLimitOrderBook lob = buildDefaultLOB();
 		CompletableFuture<List<Trade>> future = new CompletableFuture<>();
 		Consumer<List<Trade>> tcb = trades -> future.complete(trades); 
 		lob.subscribeTradeEvent(tcb);
@@ -280,8 +280,8 @@ public class TestLimitOrderBook {
 		
 	}
 
-	private LimitOrderBook buildDefaultLOB() {
-		LimitOrderBook lob = new LimitOrderBook("0700.HK"); 
+	private AuctionLimitOrderBook buildDefaultLOB() {
+		AuctionLimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
 		lob.placeOrder(lobFactory.create(Side.SELL, 20000, 9.88));
 		lob.placeOrder(lobFactory.create(Side.BUY, 10000, 9.87));
 		lob.placeOrder(lobFactory.create(Side.SELL, 18000, 9.89));
@@ -293,7 +293,7 @@ public class TestLimitOrderBook {
 	
 	@Test
 	public void cancelOutstandingOrder_expectReductionOfOrderSizeAtThatPriceLevel() {
-		LimitOrderBook lob = buildDefaultLOB();
+		AuctionLimitOrderBook lob = buildDefaultLOB();
 		
 		LimitOrder testOrder = lobFactory.create(Side.SELL, 40000, 9.88);
 		lob.placeOrder(testOrder);

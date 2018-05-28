@@ -19,13 +19,13 @@ import com.yksi7417.simulator.tickdata.TickDataSource;
 public class TestSimuation {
 	LimitOrderFactory lobFactory = new LimitOrderFactory();
 
-	private LimitOrderBook lob; 
+	private AuctionLimitOrderBook lob; 
 	private TickDataSource tds;
 
 	@Before
 	public void init(){
 		String ticker = "0700.HK";
-		this.lob = new LimitOrderBook(ticker); 
+		this.lob = new AuctionLimitOrderBook(ticker); 
 		this.tds = new TickDataConvertor(ticker);
 	}
 	

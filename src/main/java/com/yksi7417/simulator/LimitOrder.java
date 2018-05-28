@@ -1,6 +1,6 @@
 package com.yksi7417.simulator;
 
-import java.util.concurrent.atomic.Atomiclongeger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * the method matches is not thread safe.   Designed for thread-confinement environment 
@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.Atomiclongeger;
 public class LimitOrder {
 	public enum Side { BUY, SELL }
 
-	private static final Atomiclongeger idGenerator = new Atomiclongeger(1);
+	private static final AtomicLong idGenerator = new AtomicLong(1);
 
 	private long orderid; 
 	private Side side; 
 	private long qty; 
-	// price as double, but assume to be 6 decimal polongs precision
+	// price as double, but assume to be 6 decimal precision
 	private double price; 	
 	private long timestamp;
 	
@@ -59,7 +59,7 @@ public class LimitOrder {
 		return timestamp;
 	} 
 	
-	private boolean isEqualOrBetter(double d1, double d2) {
+	public boolean isEqualOrBetter(double d1, double d2) {
 		switch (this.side) {
 		case BUY:
 			return PriceUtils.isEqualGreaterThan(d1, d2);
@@ -70,45 +70,11 @@ public class LimitOrder {
 		}
 	}
 	
-	/** 
-	 * This method could make change to longernal variables to this LimitOrder or the other during a match.   
-	 * @return Trade
-	 */
-	public Trade matches(LimitOrder limitOrder) {
-		if (this.getSide().equals(limitOrder.getSide()))
-			return null; 
-		if (!isEqualOrBetter(this.getPrice(), limitOrder.getPrice()))
-			return null; 
-		return generateMatchTrade(limitOrder);
-	}
-
-	private Trade generateMatchTrade(LimitOrder limitOrder) {
-		long tradeQty = 0;
-		
-		if (this.getQty() > limitOrder.getQty()) {
-			tradeQty = limitOrder.getQty();
-			this.qty -= limitOrder.getQty();
-			limitOrder.qty = 0;
-		}
-		else if (this.getQty() < limitOrder.getQty()) {
-			tradeQty = this.getQty();
-			this.qty = 0;
-			limitOrder.qty -= tradeQty;
-		}
-		else {  // equal case
-			tradeQty = limitOrder.getQty();
-			this.qty = 0;
-			limitOrder.qty = 0;
-		}
-		
-		return new Trade(tradeQty, this.getPrice());
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + orderid;
+		result = prime * result + (int) orderid;
 		return result;
 	}
 
