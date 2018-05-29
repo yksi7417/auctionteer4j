@@ -1,11 +1,15 @@
 package com.yksi7417.simulator;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.PriorityQueue;
+import java.util.logging.Logger;
+
 
 public class AuctionLimitOrderBook {
-	private final String ticker;
+    private final static Logger LOG = Logger.getLogger(AuctionLimitOrderBook.class.getName());
 
+	private final String ticker;
 	private final Comparator<LimitOrder> bidPxComparator 
 		= (LimitOrder o1, LimitOrder o2)-> (int)((o2.getPrice()-o1.getPrice())/PriceUtils.Epsilon); 
 	private final Comparator<LimitOrder> askPxComparator 
@@ -26,10 +30,29 @@ public class AuctionLimitOrderBook {
 	public void placeOrder(LimitOrder limitOrder) {
 		PriorityQueue<LimitOrder> sameSideQueue = getSameSideQueue(limitOrder);
 		sameSideQueue.add(limitOrder);
+		printPQ(ticker, bidQueue, askQueue);
 	}
 	
 	public void match() {
 		
+	}
+	
+	private static void printPQ(String ticker, PriorityQueue<LimitOrder> bid, PriorityQueue<LimitOrder> ask){
+		int maxDepth = Math.max(bid.size(), ask.size());
+		Iterator<LimitOrder> bidIter = bid.iterator();
+		Iterator<LimitOrder> askIter = ask.iterator();
+		
+		for (int i = 0; i < maxDepth; i++) {
+			String bidString = "";
+			String askString = "";
+			if (bidIter.hasNext()) bidString = bidIter.next().toString();
+			if (askIter.hasNext()) askString = askIter.next().toString();
+			LOG.info(pad(bidString, askString, 40));
+		}
+	}
+	
+	private static String pad(String s1, String s2, int n) {
+	     return String.format("%1$" + n + "s", s1) + "  " + String.format("%1$-" + n + "s", s2);  
 	}
 
 	private PriorityQueue<LimitOrder> getSameSideQueue(LimitOrder limitOrder) {

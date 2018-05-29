@@ -9,9 +9,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class LimitOrder {
-	public enum Side { BUY, SELL }
 
-	private static final AtomicLong idGenerator = new AtomicLong(1);
+	private static final AtomicLong idGenerator = new AtomicLong(0);
 
 	private long orderid; 
 	private Side side; 
@@ -59,17 +58,6 @@ public class LimitOrder {
 		return timestamp;
 	} 
 	
-	public boolean isEqualOrBetter(double d1, double d2) {
-		switch (this.side) {
-		case BUY:
-			return PriceUtils.isEqualGreaterThan(d1, d2);
-		case SELL:
-			return PriceUtils.isEqualLessThan(d1, d2);
-		default:
-			throw new RuntimeException("do not expect anything other than BUY/SELL order, please review design if you see this");
-		}
-	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -91,5 +79,14 @@ public class LimitOrder {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		if (Side.BUY.equals(side))
+			return "ts:" + timestamp + " id:" + orderid + " B " + qty + "@" + price;
+		return qty + "@" + price + " S " + "ts:" + timestamp + " id:" + orderid;
+	}
+	
+	
 
 }
