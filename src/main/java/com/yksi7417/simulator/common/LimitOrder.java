@@ -17,7 +17,7 @@ public class LimitOrder implements ILimitOrder {
 		this(other.getOrderid(), other.getSide(), other.getQty(), other.getPrice(), other.getTimestamp());
 	}
 	
-	private LimitOrder(long orderId, Side side, long qty, double price, long timestamp) {
+	public LimitOrder(long orderId, Side side, long qty, double price, long timestamp) {
 		super();
 		this.orderid = orderId;
 		this.side = side;
