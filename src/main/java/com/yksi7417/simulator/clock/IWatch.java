@@ -5,6 +5,7 @@ import java.util.TimerTask;
 public interface IWatch {
 	long now(); 
 	long millisecondsSinceStart();
-	void schedule(TimerTask task, long delay, long period);
+	void schedule(TimerTask task, long delay);
+	void scheduleAtFixedRate(TimerTask task, long delay, long period);
 	void cancel(); 
 }

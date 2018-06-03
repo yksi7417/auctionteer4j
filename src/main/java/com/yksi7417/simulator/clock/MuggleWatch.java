@@ -18,9 +18,6 @@ public class MuggleWatch implements IWatch {
 		this.startTimeInEpoch = System.currentTimeMillis(); 
 	}
 	
-	public void schedule(TimerTask task, long delay, long period){
-		systemTimer.schedule(task, delay, period);
-	}
 	@Override
 	public long millisecondsSinceStart() {
 		return System.currentTimeMillis() - this.startTimeInEpoch;
@@ -32,6 +29,16 @@ public class MuggleWatch implements IWatch {
 	@Override
 	public long now() {
 		return System.currentTimeMillis();
+	}
+
+	@Override
+	public void schedule(TimerTask task, long delay) {
+		systemTimer.schedule(task, delay);
+	}
+
+	@Override
+	public void scheduleAtFixedRate(TimerTask task, long delay, long period) {
+		systemTimer.schedule(task, delay, period);
 	}
 	
 }

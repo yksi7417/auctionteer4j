@@ -3,11 +3,14 @@ package com.yksi7417.simulator.limitorderbook;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.PriorityQueue;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import com.yksi7417.simulator.clock.IWatch;
 import com.yksi7417.simulator.common.LimitOrder;
 import com.yksi7417.simulator.common.PriceUtils;
+
+import static com.yksi7417.simulator.common.TimeConstants.*;
 
 public class AuctionLimitOrderBook implements ILimitOrderBook {
 	private static Logger LOG = Logger.getLogger(AuctionLimitOrderBook.class.getName());
@@ -27,6 +30,13 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 		super();
 		this.watch = watch; 
 		this.ticker = ticker;
+		TimerTask matchTask = new TimerTask() { public void run() 
+			{ 
+				match(); 
+				watch.cancel();
+			} 
+		};
+		watch.schedule(matchTask, 15 * MINUTES);
 	}
 
 	/* (non-Javadoc)
@@ -48,6 +58,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 	}
 	
 	public void match() {
+		LOG.info("================ Matching Order Book " + watch.millisecondsSinceStart() / 1000 + "seconds since start " );
 		
 	}
 	

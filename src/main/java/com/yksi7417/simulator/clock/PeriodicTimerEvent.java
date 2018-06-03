@@ -19,7 +19,6 @@ public class PeriodicTimerEvent extends TimerTask
 	@Override
 	public void run() {
 		if (clock.millisecondsSinceStart() > startTimeInMs + whenToStopInMs) {
-			clock.cancel(); 
 			return; 
 		}
 		action.run(); 

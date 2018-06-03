@@ -1,7 +1,5 @@
 package com.yksi7417.simulator;
 
-import java.util.logging.Logger;
-
 import com.yksi7417.simulator.clock.AcronixWatch;
 import com.yksi7417.simulator.clock.IWatch;
 import com.yksi7417.simulator.incomingorders.IIncomingOrdersSource;

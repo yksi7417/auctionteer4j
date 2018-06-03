@@ -9,6 +9,7 @@ import com.yksi7417.simulator.common.LimitOrder;
 import com.yksi7417.simulator.common.Side;
 import com.yksi7417.simulator.limitorderbook.ILimitOrderBook;
 
+import static com.yksi7417.simulator.common.TimeConstants.*;
 /*
  * Using the information provided above write a computer program in Java that will do the following 
 
@@ -27,10 +28,6 @@ public class RandomOrderGenerator implements IIncomingOrdersSource {
 	private final Random randomNumberGenerator = new Random(); 
 	private ILimitOrderBook limitOrderBook; 
 	
-	private final int IMMEDIATELY = 0; 
-	private final int SECONDS = 1000; 
-	private final int MINUTES = 60 * SECONDS; 
-	
 	private final int meanSize = 100000; 
 	private final int stdSize = 20000; 
 	
@@ -46,7 +43,7 @@ public class RandomOrderGenerator implements IIncomingOrdersSource {
 	
 	public void run() {
 		TimerTask task = new PeriodicTimerEvent(watch, 15 * MINUTES, () -> sendRandomOrder());
-		watch.schedule(task, IMMEDIATELY, 30 * SECONDS);
+		watch.scheduleAtFixedRate(task, IMMEDIATELY, 30 * SECONDS);
 	}
 	
 	void sendRandomOrder(){

@@ -25,10 +25,6 @@ public class AcronixWatch implements IWatch {
 			throw new IllegalArgumentException("Acronix can only speed up / slow down time, can't freeze time");
 	}
 	
-	public void schedule(TimerTask task, long delay, long period){
-		systemTimer.schedule(task, adjustTime(delay), adjustTime(period));
-	}
-	
 	private long adjustTime(long timeInMilliseconds) {
 		long result = timeInMilliseconds / speedupFactor; 
 		return result; 
@@ -50,6 +46,16 @@ public class AcronixWatch implements IWatch {
 		long wallClockNow = System.currentTimeMillis() ; 
 		long timePastInWallClockTime = wallClockNow - startTime;
 		return wallClockNow + (timePastInWallClockTime * speedupFactor);
+	}
+
+	@Override
+	public void schedule(TimerTask task, long delay) {
+		systemTimer.schedule(task, adjustTime(delay));
+	}
+
+	@Override
+	public void scheduleAtFixedRate(TimerTask task, long delay, long period) {
+		systemTimer.schedule(task, adjustTime(delay), adjustTime(period));
 	}
 	
 }
