@@ -47,7 +47,7 @@ public class VolumeMaximizerMatchPolicy implements IMatchPolicy {
 	private List<Trade> determineMatchTrades() {
 		Long maxMatchQty = null; 
 		Double maxMatchPrice = null; 
-		Set<Double> possibleMatchPrices = determinePossibleAskPricesThatTriggerMatch(); 
+		Set<Double> possibleMatchPrices = determinePossiblePricesThatTriggerMatch(); 
 		for (Double matchPrice : possibleMatchPrices ) {
 			List<Trade> matchTrade = matchLimitOrder(matchPrice, false);
 			long matchQty = matchTrade.stream().mapToLong(t -> t.getQty()).sum();
@@ -60,7 +60,7 @@ public class VolumeMaximizerMatchPolicy implements IMatchPolicy {
 		return matchLimitOrder(maxMatchPrice, true);
 	}
 	
-	private Set<Double> determinePossibleAskPricesThatTriggerMatch(){
+	private Set<Double> determinePossiblePricesThatTriggerMatch(){
 		HashSet<Double> prices = new HashSet<>();
 		
 		double maxMatchingPrice = bidQueue.get(0).getPrice();
