@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import com.yksi7417.simulator.clock.IWatch;
+import com.yksi7417.simulator.common.ILimitOrder;
 import com.yksi7417.simulator.common.LimitOrder;
 import com.yksi7417.simulator.common.PriceUtils;
 import com.yksi7417.simulator.common.Trade;
@@ -23,13 +24,13 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 	private final IWatch watch; 
 	private final IMatchPolicy matchPolicy; 
 	
-	private final Comparator<LimitOrder> bidPxComparator 
-		= (LimitOrder o1, LimitOrder o2)-> (int)((o2.getPrice()-o1.getPrice())/PriceUtils.Epsilon); 
-	private final Comparator<LimitOrder> askPxComparator 
-		= (LimitOrder o1, LimitOrder o2)-> (int)((o1.getPrice()-o2.getPrice())/PriceUtils.Epsilon); 
+	private final Comparator<ILimitOrder> bidPxComparator 
+		= (ILimitOrder o1, ILimitOrder o2)-> (int)((o2.getPrice()-o1.getPrice())/PriceUtils.Epsilon); 
+	private final Comparator<ILimitOrder> askPxComparator 
+		= (ILimitOrder o1, ILimitOrder o2)-> (int)((o1.getPrice()-o2.getPrice())/PriceUtils.Epsilon); 
 
-	PriorityQueue<LimitOrder> bidQueue = new PriorityQueue<>( new PriceTimeComparator(bidPxComparator));
-	PriorityQueue<LimitOrder> askQueue = new PriorityQueue<>( new PriceTimeComparator(askPxComparator));
+	PriorityQueue<ILimitOrder> bidQueue = new PriorityQueue<>( new PriceTimeComparator(bidPxComparator));
+	PriorityQueue<ILimitOrder> askQueue = new PriorityQueue<>( new PriceTimeComparator(askPxComparator));
 					
 	public AuctionLimitOrderBook(IWatch watch, String ticker) {
 		super();
@@ -58,7 +59,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 	 */
 	@Override
 	public void placeOrder(LimitOrder limitOrder) {
-		PriorityQueue<LimitOrder> sameSideQueue = getSameSideQueue(limitOrder);
+		PriorityQueue<ILimitOrder> sameSideQueue = getSameSideQueue(limitOrder);
 		sameSideQueue.add(limitOrder);
 		printPQ(ticker, bidQueue, askQueue);
 	}
@@ -74,10 +75,10 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 		printPQ(ticker, bidQueue, askQueue);
 	}
 	
-	private void printPQ(String ticker, PriorityQueue<LimitOrder> bid, PriorityQueue<LimitOrder> ask){
+	private void printPQ(String ticker, PriorityQueue<ILimitOrder> bid, PriorityQueue<ILimitOrder> ask){
 		int maxDepth = Math.max(bid.size(), ask.size());
-		Iterator<LimitOrder> bidIter = bid.iterator();
-		Iterator<LimitOrder> askIter = ask.iterator();
+		Iterator<ILimitOrder> bidIter = bid.iterator();
+		Iterator<ILimitOrder> askIter = ask.iterator();
 		
 		LOG.info("================ Order Book " + watch.millisecondsSinceStart() / 1000 + "s since start " );
 		for (int i = 0; i < maxDepth; i++) {
@@ -93,7 +94,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 	     return String.format("%1$" + n + "s", s1) + "  " + String.format("%1$-" + n + "s", s2);  
 	}
 
-	private PriorityQueue<LimitOrder> getSameSideQueue(LimitOrder limitOrder) {
+	private PriorityQueue<ILimitOrder> getSameSideQueue(ILimitOrder limitOrder) {
 		switch (limitOrder.getSide()) {
 		case BUY:
 			return bidQueue; 

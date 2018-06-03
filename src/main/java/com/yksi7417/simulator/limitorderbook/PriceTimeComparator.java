@@ -2,16 +2,16 @@ package com.yksi7417.simulator.limitorderbook;
 
 import java.util.Comparator;
 
-import com.yksi7417.simulator.common.LimitOrder;
+import com.yksi7417.simulator.common.ILimitOrder;
 import com.yksi7417.simulator.common.PriceUtils;
 
-class PriceTimeComparator implements Comparator<LimitOrder> {
-	final Comparator<LimitOrder> priceComparator;
-	public PriceTimeComparator(Comparator<LimitOrder> priceComparator) {
+class PriceTimeComparator implements Comparator<ILimitOrder> {
+	final Comparator<ILimitOrder> priceComparator;
+	public PriceTimeComparator(Comparator<ILimitOrder> priceComparator) {
 		this.priceComparator = priceComparator; 
 	}
 	@Override
-	public int compare(LimitOrder o1, LimitOrder o2) {
+	public int compare(ILimitOrder o1, ILimitOrder o2) {
 		if (PriceUtils.isEqual(o1.getPrice() , o2.getPrice()))
 			return Long.compare(o1.getTimestamp(), o2.getTimestamp());
 		else 

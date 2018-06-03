@@ -2,7 +2,7 @@ package com.yksi7417.simulator.common;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class LimitOrder {
+public class LimitOrder implements ILimitOrder {
 
 	private static final AtomicLong idGenerator = new AtomicLong(0);
 
@@ -13,8 +13,8 @@ public class LimitOrder {
 	private double price; 	
 	private long timestamp;
 	
-	public LimitOrder(LimitOrder other) {
-		this(other.orderid, other.getSide(), other.getQty(), other.getPrice(), other.getTimestamp());
+	public LimitOrder(ILimitOrder other) {
+		this(other.getOrderid(), other.getSide(), other.getQty(), other.getPrice(), other.getTimestamp());
 	}
 	
 	private LimitOrder(long orderId, Side side, long qty, double price, long timestamp) {
@@ -35,19 +35,39 @@ public class LimitOrder {
 		this.timestamp = timestamp; 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.yksi7417.simulator.common.ILimitOrder#getOrderid()
+	 */
+	@Override
 	public long getOrderid() {
 		return orderid;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.yksi7417.simulator.common.ILimitOrder#getSide()
+	 */
+	@Override
 	public Side getSide() {
 		return side;
 	}
+	/* (non-Javadoc)
+	 * @see com.yksi7417.simulator.common.ILimitOrder#getQty()
+	 */
+	@Override
 	public long getQty() {
 		return qty;
 	}
+	/* (non-Javadoc)
+	 * @see com.yksi7417.simulator.common.ILimitOrder#getPrice()
+	 */
+	@Override
 	public double getPrice() {
 		return price;
 	}
+	/* (non-Javadoc)
+	 * @see com.yksi7417.simulator.common.ILimitOrder#getTimestamp()
+	 */
+	@Override
 	public long getTimestamp() {
 		return timestamp;
 	} 

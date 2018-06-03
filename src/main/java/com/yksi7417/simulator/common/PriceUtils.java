@@ -18,7 +18,7 @@ public class PriceUtils {
 		return isEqual(d1,d2) || isLessThan(d1,d2);		
 	}
 	
-	public boolean isEqualOrBetter(Side side, double d1, double d2) {
+	public static boolean isEqualOrBetter(Side side, double d1, double d2) {
 		switch (side) {
 		case BUY:
 			return isEqualGreaterThan(d1, d2);
