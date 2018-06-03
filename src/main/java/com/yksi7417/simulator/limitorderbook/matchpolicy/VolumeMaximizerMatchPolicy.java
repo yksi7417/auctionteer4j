@@ -1,6 +1,7 @@
 package com.yksi7417.simulator.limitorderbook.matchpolicy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,61 +37,86 @@ public class VolumeMaximizerMatchPolicy implements IMatchPolicy {
 	}
 	
 	public List<Trade> match() {
-		double matchPrice = determineMatchPrice();
-		return match(matchPrice);
+		if (bidQueue.isEmpty() || askQueue.isEmpty())
+			return Collections.emptyList();
+		return determineMatchTrades();
 	}
 	
-	private double determineMatchPrice(){
-		for (ILimitOrder bidOrder : bidQueue){
-			
+	private List<Trade> determineMatchTrades() {
+		Long lastMatchQty = null; 
+		List<Trade> lastMatchTrades = null;
+		for (Double matchPrice : determinePossibleMatchPrices()) {
+			List<Trade> matchTrade = matchLimitOrder(matchPrice);
+			long matchQty = matchTrade.stream().mapToLong(t -> t.getQty()).sum();
+			if (lastMatchQty == null){
+				lastMatchTrades = matchTrade;				
+				lastMatchQty = matchQty;
+			}
+			else if (lastMatchQty > matchQty)
+				break;
 		}
-//		FindPossibleMatchPricesBetweenOverlapArea(tradeList); 
-		return 0.0; 
+		return lastMatchTrades;
 	}
 	
-	private List<Trade> match(double matchPrice)
-	{
-		List<Trade> result = new ArrayList<Trade>();
+	private List<Double> determinePossibleMatchPrices(){
+		double maxMatchingPrice = bidQueue.get(0).getPrice();
+		double minMatchingPrice = askQueue.get(0).getPrice();
+		
+		List<Double> result = new LinkedList<Double>();
+		double currentPx = 0.0; 
+		
+		for (ILimitOrder askOrder : askQueue){
+			if (PriceUtils.isLessThan(askOrder.getPrice(), minMatchingPrice) || 
+				PriceUtils.isGreaterThan(askOrder.getPrice(), maxMatchingPrice))
+				break; 
+			
+			if (PriceUtils.isEqual(0.0, currentPx) || !PriceUtils.isEqual(currentPx, askOrder.getPrice())){
+				result.add(askOrder.getPrice());
+				currentPx = askOrder.getPrice();
+			}
+		}
+		
 		return result; 
 	}
+			
+	private List<Trade> matchLimitOrder(double matchPrice) {
+		List<ILimitOrder> leftQueue = new LinkedList<ILimitOrder>(bidQueue);
+		List<ILimitOrder> rightQueue = new LinkedList<ILimitOrder>(askQueue);
+		
+		List<Trade> trades = new ArrayList<Trade>();
+		while (!leftQueue.isEmpty() && !rightQueue.isEmpty()) {
+			MatchableLimitOrder leftMatchOrder = new MatchableLimitOrder(leftQueue.remove(0)); 
+			if (PriceUtils.isLessThan(leftMatchOrder.getPrice(), matchPrice)) break;
+			
+			while (leftMatchOrder.getQty() > 0 && !rightQueue.isEmpty() ) {
+				ILimitOrder rightOrder = rightQueue.remove(0);
+				MatchableLimitOrder rightMatchOrder = new MatchableLimitOrder(rightOrder);
+				Trade tradeEvent = matches(leftMatchOrder, rightMatchOrder, matchPrice);
+				if (tradeEvent == null) break;
+				trades.add(tradeEvent);
+				if (rightMatchOrder.getQty() > 0)
+					rightQueue.add(new LimitOrder(rightMatchOrder));
+			}
+			
+			if (leftMatchOrder.getQty() > 0)
+				leftQueue.add(new LimitOrder(leftMatchOrder));
+		}
+		
+		askQueue.clear();
+		askQueue.addAll(rightQueue);
+		bidQueue.clear();
+		askQueue.addAll(leftQueue);
+		
+		return trades;
+	}
 	
-//	private void FindPossibleMatchPricesBetweenOverlapArea(List<Trade> tradeList) {
-//		List<ILimitOrder> askCopy = new LinkedList<>(askQueue);
-//		List<ILimitOrder> bidCopy = new LinkedList<>(bidQueue);
-//		
-//		HashMap<Integer, Long> potentialMatchList = new HashMap<>(bidCopy.size() + askCopy.size());
-//		while (askCopy.first().getPrice() >= bidCopy.first().getPrice()){
-//			List<Trade> tradeEvents = matchLimitOrder(askCopy, bidCopy);
-//			
-//		}
-//	}
-//	
-//	private List<Trade> matchLimitOrder(List<ILimitOrder> leftQueue, List<ILimitOrder> rightQueue) {
-//		List<Trade> trades = new ArrayList<Trade>();
-//		MatchableLimitOrder leftMatchOrder = new MatchableLimitOrder(leftQueue.remove()); 
-//		while (leftMatchOrder.getQty() > 0) {
-//			ILimitOrder rightOrder = rightQueue.poll();
-//			if (rightOrder == null) break; 
-//
-//			MatchableLimitOrder rightMatchOrder = new MatchableLimitOrder(rightOrder);
-//			Trade tradeEvent = matches(leftMatchOrder, rightMatchOrder);
-//			if (tradeEvent == null) break;
-//			trades.add(tradeEvent);
-//			if (rightMatchOrder.getQty() > 0)
-//				rightQueue.add(new LimitOrder(rightMatchOrder));
-//		}
-//		if (leftMatchOrder.getQty() > 0)
-//			leftQueue.add(new LimitOrder(leftMatchOrder));
-//		return trades;
-//	}
-//	
-//	private Trade matches(MatchableLimitOrder leftOrder, MatchableLimitOrder rightOrder){
-//		if (leftOrder.getSide().equals(rightOrder.getSide())) return null; 
-//		if (!PriceUtils.isEqualOrBetter(leftOrder.getSide(), leftOrder.getPrice(), rightOrder.getPrice())) return null; 
-//		return generateMatchTrade(leftOrder, rightOrder);
-//	}
+	private Trade matches(MatchableLimitOrder leftOrder, MatchableLimitOrder rightOrder, double matchPrice){
+		if (leftOrder.getSide().equals(rightOrder.getSide())) return null; 
+		if (!PriceUtils.isEqualOrBetter(leftOrder.getSide(), leftOrder.getPrice(), rightOrder.getPrice())) return null; 
+		return generateMatchTrade(leftOrder, rightOrder, matchPrice);
+	}
 	
-	private Trade generateMatchTrade(MatchableLimitOrder leftOrder, MatchableLimitOrder rightOrder) {
+	private Trade generateMatchTrade(MatchableLimitOrder leftOrder, MatchableLimitOrder rightOrder, double matchPrice) {
 		long tradeQty = 0;
 		
 		if (leftOrder.qty >= rightOrder.qty) {
@@ -103,7 +129,7 @@ public class VolumeMaximizerMatchPolicy implements IMatchPolicy {
 			leftOrder.qty = 0;
 			rightOrder.qty -= tradeQty;
 		}
-		return new Trade(leftOrder.getPrice(), tradeQty);
+		return new Trade(matchPrice, tradeQty);
 	}
 	
 	

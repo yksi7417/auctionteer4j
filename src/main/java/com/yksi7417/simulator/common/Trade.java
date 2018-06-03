@@ -10,6 +10,14 @@ public class Trade {
 		this.qty = qty;
 	}
 
+	public double getPrice() {
+		return price;
+	}
+
+	public long getQty() {
+		return qty;
+	}
+
 	@Override
 	public String toString() {
 		return "[" + qty + "@" + price + "]";
