@@ -6,7 +6,7 @@ import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
 
-public class AuctionLimitOrderBook {
+public class AuctionLimitOrderBook implements ILimitOrderBook {
     private final static Logger LOG = Logger.getLogger(AuctionLimitOrderBook.class.getName());
 
 	private final String ticker;
@@ -23,10 +23,18 @@ public class AuctionLimitOrderBook {
 		this.ticker = ticker;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.yksi7417.simulator.ILimitOrderBook#getTicker()
+	 */
+	@Override
 	public String getTicker() {
 		return ticker;
 	} 
 	
+	/* (non-Javadoc)
+	 * @see com.yksi7417.simulator.ILimitOrderBook#placeOrder(com.yksi7417.simulator.LimitOrder)
+	 */
+	@Override
 	public void placeOrder(LimitOrder limitOrder) {
 		PriorityQueue<LimitOrder> sameSideQueue = getSameSideQueue(limitOrder);
 		sameSideQueue.add(limitOrder);
@@ -47,7 +55,7 @@ public class AuctionLimitOrderBook {
 			String askString = "";
 			if (bidIter.hasNext()) bidString = bidIter.next().toString();
 			if (askIter.hasNext()) askString = askIter.next().toString();
-			LOG.info(pad(bidString, askString, 40));
+			LOG.info(pad(bidString, askString, 60));
 		}
 	}
 	

@@ -6,7 +6,7 @@ public class TestLimitOrderBook {
 	
 	@Test
 	public void expectEmptyBook() {
-		AuctionLimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
+		ILimitOrderBook lob = new AuctionLimitOrderBook("0700.HK"); 
 		lob.placeOrder(new LimitOrder(Side.BUY, 1000, 10, 0));
 		lob.placeOrder(new LimitOrder(Side.SELL, 1000, 10.1, 0));
 	}
