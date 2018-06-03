@@ -2,6 +2,7 @@ package com.yksi7417.simulator.limitorderbook;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.TimerTask;
 import java.util.logging.Logger;
@@ -9,6 +10,9 @@ import java.util.logging.Logger;
 import com.yksi7417.simulator.clock.IWatch;
 import com.yksi7417.simulator.common.LimitOrder;
 import com.yksi7417.simulator.common.PriceUtils;
+import com.yksi7417.simulator.common.Trade;
+import com.yksi7417.simulator.limitorderbook.matchpolicy.IMatchPolicy;
+import com.yksi7417.simulator.limitorderbook.matchpolicy.VolumeMaximizerMatchPolicy;
 
 import static com.yksi7417.simulator.common.TimeConstants.*;
 
@@ -17,6 +21,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 		
 	private final String ticker;
 	private final IWatch watch; 
+	private final IMatchPolicy matchPolicy; 
 	
 	private final Comparator<LimitOrder> bidPxComparator 
 		= (LimitOrder o1, LimitOrder o2)-> (int)((o2.getPrice()-o1.getPrice())/PriceUtils.Epsilon); 
@@ -37,6 +42,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 			} 
 		};
 		watch.schedule(matchTask, 15 * MINUTES);
+		this.matchPolicy = new VolumeMaximizerMatchPolicy(this.bidQueue, this.askQueue);
 	}
 
 	/* (non-Javadoc)
@@ -58,8 +64,14 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 	}
 	
 	public void match() {
+		LOG.info("");
 		LOG.info("================ Matching Order Book " + watch.millisecondsSinceStart() / 1000 + "seconds since start " );
-		
+		List<Trade> tradeList = this.matchPolicy.match(); 
+		for (Trade trade : tradeList) {
+			LOG.info(trade.toString());
+		}
+		LOG.info("================ Order Book after match" );
+		printPQ(ticker, bidQueue, askQueue);
 	}
 	
 	private void printPQ(String ticker, PriorityQueue<LimitOrder> bid, PriorityQueue<LimitOrder> ask){
@@ -67,7 +79,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 		Iterator<LimitOrder> bidIter = bid.iterator();
 		Iterator<LimitOrder> askIter = ask.iterator();
 		
-		LOG.info("================ New Order Book " + watch.millisecondsSinceStart() / 1000 + "seconds since start " );
+		LOG.info("================ Order Book " + watch.millisecondsSinceStart() / 1000 + "s since start " );
 		for (int i = 0; i < maxDepth; i++) {
 			String bidString = "";
 			String askString = "";
