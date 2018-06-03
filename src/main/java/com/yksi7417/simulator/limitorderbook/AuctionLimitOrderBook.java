@@ -1,9 +1,12 @@
 package com.yksi7417.simulator.limitorderbook;
 
+import static com.yksi7417.simulator.common.TimeConstants.MINUTES;
+
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 
@@ -14,8 +17,6 @@ import com.yksi7417.simulator.common.PriceUtils;
 import com.yksi7417.simulator.common.Trade;
 import com.yksi7417.simulator.limitorderbook.matchpolicy.IMatchPolicy;
 import com.yksi7417.simulator.limitorderbook.matchpolicy.VolumeMaximizerMatchPolicy;
-
-import static com.yksi7417.simulator.common.TimeConstants.*;
 
 public class AuctionLimitOrderBook implements ILimitOrderBook {
 	private static Logger LOG = Logger.getLogger(AuctionLimitOrderBook.class.getName());
@@ -28,9 +29,11 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 		= (ILimitOrder o1, ILimitOrder o2)-> (int)((o2.getPrice()-o1.getPrice())/PriceUtils.Epsilon); 
 	private final Comparator<ILimitOrder> askPxComparator 
 		= (ILimitOrder o1, ILimitOrder o2)-> (int)((o1.getPrice()-o2.getPrice())/PriceUtils.Epsilon); 
-
-	PriorityQueue<ILimitOrder> bidQueue = new PriorityQueue<>( new PriceTimeComparator(bidPxComparator));
-	PriorityQueue<ILimitOrder> askQueue = new PriorityQueue<>( new PriceTimeComparator(askPxComparator));
+	private final PriceTimeComparator bidQueueComparator = new PriceTimeComparator(bidPxComparator); 
+	private final PriceTimeComparator askQueueComparator = new PriceTimeComparator(askPxComparator); 
+		
+	List<ILimitOrder> bidQueue = new LinkedList<>( );
+	List<ILimitOrder> askQueue = new LinkedList<>( );
 					
 	public AuctionLimitOrderBook(IWatch watch, String ticker) {
 		super();
@@ -59,8 +62,10 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 	 */
 	@Override
 	public void placeOrder(LimitOrder limitOrder) {
-		PriorityQueue<ILimitOrder> sameSideQueue = getSameSideQueue(limitOrder);
-		sameSideQueue.add(limitOrder);
+		List<ILimitOrder> sameSideQueue = getSameSideQueue(limitOrder);
+		PriceTimeComparator comparitor = getPriceTimeComparator(limitOrder);
+        int insertionPoint = Math.abs(Collections.binarySearch(sameSideQueue, limitOrder, comparitor) + 1);
+		sameSideQueue.add(insertionPoint, limitOrder);
 		printPQ(ticker, bidQueue, askQueue);
 	}
 	
@@ -75,7 +80,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 		printPQ(ticker, bidQueue, askQueue);
 	}
 	
-	private void printPQ(String ticker, PriorityQueue<ILimitOrder> bid, PriorityQueue<ILimitOrder> ask){
+	private void printPQ(String ticker, List<ILimitOrder> bid, List<ILimitOrder> ask){
 		int maxDepth = Math.max(bid.size(), ask.size());
 		Iterator<ILimitOrder> bidIter = bid.iterator();
 		Iterator<ILimitOrder> askIter = ask.iterator();
@@ -94,7 +99,7 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 	     return String.format("%1$" + n + "s", s1) + "  " + String.format("%1$-" + n + "s", s2);  
 	}
 
-	private PriorityQueue<ILimitOrder> getSameSideQueue(ILimitOrder limitOrder) {
+	private List<ILimitOrder> getSameSideQueue(ILimitOrder limitOrder) {
 		switch (limitOrder.getSide()) {
 		case BUY:
 			return bidQueue; 
@@ -104,4 +109,16 @@ public class AuctionLimitOrderBook implements ILimitOrderBook {
 			throw new RuntimeException("Do not expect any side other than BUY/SELL, please review design");
 		}
 	}
+	
+	private PriceTimeComparator getPriceTimeComparator(ILimitOrder limitOrder) {
+		switch (limitOrder.getSide()) {
+		case BUY:
+			return bidQueueComparator; 
+		case SELL:
+			return askQueueComparator; 
+		default:
+			throw new RuntimeException("Do not expect any side other than BUY/SELL, please review design");
+		}
+	}
+	
 }
