@@ -10,7 +10,7 @@ public class PeriodicTimerEvent extends TimerTask
 	private final Runnable action; 
 	
 	public PeriodicTimerEvent(IWatch clock, int whenToStopInMs, Runnable action) {
-		this.startTimeInMs = clock.now(); 
+		this.startTimeInMs = clock.millisecondsSinceStart(); 
 		this.clock = clock; 
 		this.whenToStopInMs = whenToStopInMs; 
 		this.action = action; 
@@ -18,7 +18,7 @@ public class PeriodicTimerEvent extends TimerTask
 	
 	@Override
 	public void run() {
-		if (clock.now() > startTimeInMs + whenToStopInMs) {
+		if (clock.millisecondsSinceStart() > startTimeInMs + whenToStopInMs) {
 			clock.cancel(); 
 			return; 
 		}

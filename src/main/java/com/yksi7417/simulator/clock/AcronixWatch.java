@@ -35,7 +35,7 @@ public class AcronixWatch implements IWatch {
 	}
 	
 	@Override
-	public long now() {
+	public long millisecondsSinceStart() {
 		long timePastInWallClockTime = System.currentTimeMillis() - startTime;
 		return (timePastInWallClockTime * speedupFactor);
 	}
@@ -43,6 +43,13 @@ public class AcronixWatch implements IWatch {
 	@Override
 	public void cancel() {
 		systemTimer.cancel();
+	}
+
+	@Override
+	public long now() {
+		long wallClockNow = System.currentTimeMillis() ; 
+		long timePastInWallClockTime = wallClockNow - startTime;
+		return wallClockNow + (timePastInWallClockTime * speedupFactor);
 	}
 	
 }
